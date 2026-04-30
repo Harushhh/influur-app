@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MARKETER
+  INFLUENCER
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum CampaignStatus {
+  DRAFT
+  SENT
+  FAILED
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum OptInStatus {
+  PENDING
+  INTERESTED
+  DECLINED
+  UNLOCKED
+}
+
+model User {
+  id                String            @id @default(cuid())
+  email             String            @unique
+  name              String
+  username          String?           @unique
+  avatarUrl         String?
+  role              Role
+  bio               String?
+  phone             String?           // hidden until opt-in unlocked
+  personalEmail     String?           // hidden until opt-in unlocked
+  rateCard          Json?             // hidden until opt-in unlocked
+  niche             String[]
+  followerCount     Int?
+  engagementRate    Float?
+  isVerified        Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  subscription      Subscription?
+  oauthTokens       OAuthToken[]
+  searchHistory     SearchHistory[]
+  savedByMarketers  SavedInfluencer[] @relation("InfluencerSaved")
+  savedInfluencers  SavedInfluencer[] @relation("MarketerSaves")
+  sentCampaigns     EmailCampaign[]   @relation("CampaignSender")
+  receivedCampaigns EmailCampaign[]   @relation("CampaignRecipients")
+  scheduledPosts    ScheduledPost[]
+
+  @@index([role])
+  @@index([engagementRate])
+}
+
+model Subscription {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier             SubscriptionTier @default(FREE)
+  stripeCustomerId String?
+  stripePriceId    String?
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean         @default(false)
+  unlocksRemaining Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model OAuthToken {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider      String   // "instagram" | "facebook"
+  accessToken   String
+  refreshToken  String?
+  tokenType     String   @default("Bearer")
+  scope         String[]
+  expiresAt     DateTime?
+  instagramId   String?
+  pageId        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([provider])
+}
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query       String
+  handle      String?
+  reelUrl     String?
+  resultData  Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([handle])
+}
+
+model SavedInfluencer {
+  id              String      @id @default(cuid())
+  
+  // Relations made optional to support saving external un-registered influencers
+  marketerId      String?
+  marketer        User?       @relation("MarketerSaves", fields: [marketerId], references: [id], onDelete: Cascade)
+  influencerId    String?
+  influencer      User?       @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
+
+  // External Data Fields (Populated by Meta Graph API)
+  username        String?
+  name            String?
+  avatar          String?
+  followers       Int?
+  engagementRate  String?
+  estCpm          String?
+
+  // Existing CRM Fields
+  optInStatus     OptInStatus @default(PENDING)
+  notes           String?
+  tags            String[]
+  isUnlocked      Boolean     @default(false)
+  unlockedAt      DateTime?
+  savedAt         DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([optInStatus])
+  @@index([marketerId])
+}
+
+model EmailCampaign {
+  id          String         @id @default(cuid())
+  senderId    String
+  sender      User           @relation("CampaignSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipients  User[]         @relation("CampaignRecipients")
+  subject     String
+  bodyHtml    String
+  bodyText    String
+  status      CampaignStatus @default(DRAFT)
+  sentAt      DateTime?
+  openCount   Int            @default(0)
+  replyCount  Int            @default(0)
+  aiGenerated Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([senderId])
+  @@index([status])
+}
+
+model ScheduledPost {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caption         String
+  mediaUrls       String[]
+  hashtags        String[]
+  platform        String     @default("instagram")
+  status          PostStatus @default(DRAFT)
+  scheduledAt     DateTime
+  publishedAt     DateTime?
+  instagramPostId String?
+  aiGenerated     Boolean    @default(false)
+  insights        Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+// 🔥 UPDATED: Advanced CreatorDNA for Discovery & AI Lookalikes
+model CreatorDNA {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  name           String
+  avatar         String?
+  bio            String?
+  followers      Int      @default(0)
+  engagement     Float    @default(0.0)
+  location       String?
+  category       String?
+  realReach      Int      @default(0)
+  cpm            Float    @default(0.0)
+  isVerified     Boolean  @default(false)
+  hasEmail       Boolean  @default(false)
+
+  // Complex nested data
+  advancedData   Json?    // Stores the AI-estimated Audience Demographics
+  recentPosts    Json?    // Stores the latest media array
+  metadata       Json?    // Preserved for your legacy requirements
+  
+  // AI Lookalike Vector mapping
+  embedding      Unsupported("vector(768)")?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Indexes to ensure Pre-Fetch Discovery search is lightning fast
+  @@index([followers(sort: Desc)])
+  @@index([engagement(sort: Desc)])
+  @@index([category])
+  @@index([location])
+}
