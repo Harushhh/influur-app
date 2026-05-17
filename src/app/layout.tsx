@@ -1,22 +1,35 @@
-import './globals.css'
-import Nav from '@/components/Nav'
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// Note: If your file is still named Nav.tsx, change the path below to "@/components/Nav"
+import Navbar from "@/components/Nav"; 
+
+// Initialize the clean, modern font for our light UI
+const inter = Inter({ subsets: ["latin"] });
+
+// Next.js 14 Metadata API (replaces manual <head> tags)
+export const metadata: Metadata = {
+  title: "INFLUUR — Influencer Intelligence Platform",
+  description: "Premium influencer discovery, analytics, and CRM for modern brands",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <head>
-        <title>INFLUUR — Influencer Intelligence Platform</title>
-        <meta name="description" content="Premium influencer discovery, analytics, and CRM for modern brands" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="noise">
-        <Nav />
-        <main style={{ minHeight: 'calc(100vh - 56px)' }}>
+      <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
+        {/* Global Navigation */}
+        <Navbar />
+        
+        {/* Main Content Wrapper */}
+        <main className="min-h-[calc(100vh-64px)] flex flex-col">
           {children}
         </main>
       </body>
     </html>
-  )
+  );
 }

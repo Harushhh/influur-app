@@ -23,31 +23,44 @@ type LiveDataExt = InfluencerDashboardData & {
 
 function StatCard({ label, value, delta, positive }: { label: string; value: string; delta: string; positive: boolean }) {
   return (
-    <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, padding: '1rem 1.2rem' }}>
-      <div style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '0.14em', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: '1.5rem', color: 'var(--text1)', fontWeight: 500 }}>{value}</div>
-      <div style={{ fontSize: 11, color: positive ? 'var(--green)' : 'var(--red)', marginTop: 4 }}>{delta}</div>
+    <div className="glass p-6 rounded-3xl hover:-translate-y-1 transition-all duration-300">
+      <div className="text-xs font-bold text-gray-500 tracking-[0.1em] uppercase mb-2">{label}</div>
+      <div className="text-3xl font-extrabold text-gray-900 mb-2">{value}</div>
+      <div className={`text-sm font-medium ${positive ? 'text-emerald-600' : 'text-rose-600'}`}>{delta}</div>
     </div>
   )
 }
 
 function PostCard({ post, onDelete }: { post: ScheduledPostItem; onDelete: (id: string) => void }) {
-  const statusColors: Record<string, string> = { SCHEDULED: 'var(--amber)', DRAFT: 'var(--text2)', PUBLISHED: 'var(--green)', FAILED: 'var(--red)' }
+  const statusConfig: Record<string, string> = { 
+    SCHEDULED: 'bg-brand-100 text-brand-700 border-brand-200', 
+    DRAFT: 'bg-gray-100 text-gray-700 border-gray-200', 
+    PUBLISHED: 'bg-emerald-100 text-emerald-700 border-emerald-200', 
+    FAILED: 'bg-rose-100 text-rose-700 border-rose-200' 
+  }
+  
   return (
-    <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, padding: '1rem 1.2rem', marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors[post.status] }} />
-          <span style={{ fontSize: 10, color: statusColors[post.status], letterSpacing: '0.1em' }}>{post.status}</span>
-          {post.aiGenerated && <span className="badge badge-amber" style={{ fontSize: 9 }}>✦ AI</span>}
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex gap-2 items-center">
+          <span className={`px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase rounded-full border ${statusConfig[post.status] || statusConfig.DRAFT}`}>
+            {post.status}
+          </span>
+          {post.aiGenerated && (
+            <span className="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase rounded-full border bg-accent-50 text-accent-600 border-accent-200">
+              ✦ AI
+            </span>
+          )}
         </div>
-        <button onClick={() => onDelete(post.id)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 12 }}>✕</button>
+        <button onClick={() => onDelete(post.id)} className="text-gray-400 hover:text-rose-500 transition-colors text-sm font-bold">✕</button>
       </div>
-      <p style={{ fontSize: 13, color: 'var(--text1)', lineHeight: 1.5, marginBottom: 8 }}>{post.caption}</p>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {post.hashtags.map(h => <span key={h} style={{ fontSize: 10, color: 'var(--blue)' }}>{h}</span>)}
+      <p className="text-sm text-gray-800 leading-relaxed mb-3">{post.caption}</p>
+      <div className="flex gap-2 flex-wrap mb-3">
+        {post.hashtags.map(h => <span key={h} className="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">{h}</span>)}
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text3)' }}>📅 {new Date(post.scheduledAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+      <div className="text-xs font-medium text-gray-500">
+        📅 {new Date(post.scheduledAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+      </div>
     </div>
   )
 }
@@ -95,47 +108,71 @@ function ComposePost({ onSchedule }: { onSchedule: (post: Omit<ScheduledPostItem
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '0.14em', display: 'block', marginBottom: 6 }}>CAPTION</label>
-        <div style={{ position: 'relative' }}>
-          <textarea value={caption} onChange={e => setCaption(e.target.value)}
-            placeholder="Write your caption..." rows={4}
-            style={{ width: '100%', background: 'var(--surface3)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', fontFamily: "'DM Mono',monospace", fontSize: 13, color: 'var(--text1)', resize: 'vertical', outline: 'none' }} />
-          <button onClick={getAISuggestions} disabled={aiLoading}
-            style={{ position: 'absolute', top: 8, right: 8, fontSize: 10, padding: '4px 10px', background: 'var(--amber-dim)', border: '1px solid rgba(212,168,71,0.2)', borderRadius: 3, color: 'var(--amber)', cursor: 'pointer' }}>
+    <div className="glass p-6 rounded-3xl">
+      <div className="mb-5">
+        <label className="block text-xs font-bold text-gray-500 tracking-[0.1em] uppercase mb-2">Caption</label>
+        <div className="relative">
+          <textarea 
+            value={caption} 
+            onChange={e => setCaption(e.target.value)}
+            placeholder="Write your caption..." 
+            rows={4}
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-shadow resize-y" 
+          />
+          <button 
+            onClick={getAISuggestions} 
+            disabled={aiLoading}
+            className="absolute top-3 right-3 text-xs font-bold px-3 py-1 bg-brand-50 text-brand-600 border border-brand-200 rounded-lg hover:bg-brand-100 transition-colors"
+          >
             {aiLoading ? '...' : '✦ AI'}
           </button>
         </div>
       </div>
 
       {aiSuggestions.length > 0 && (
-        <div style={{ background: 'var(--amber-dim)', border: '1px solid rgba(212,168,71,0.15)', borderRadius: 6, padding: '1rem', marginBottom: 16 }}>
-          <div style={{ fontSize: 10, color: 'var(--amber)', letterSpacing: '0.14em', marginBottom: 10 }}>✦ AI CAPTION SUGGESTIONS</div>
+        <div className="bg-gradient-to-r from-brand-50 to-accent-50 border border-brand-100 rounded-2xl p-4 mb-5">
+          <div className="text-xs font-bold text-brand-600 tracking-[0.1em] mb-3 uppercase">✦ AI Caption Suggestions</div>
           {aiSuggestions.map((s, i) => (
-            <div key={i} onClick={() => { setCaption(s.caption); setHashtags(s.hashtags.join(' ')) }}
-              style={{ padding: '10px', background: 'var(--surface2)', borderRadius: 4, marginBottom: 8, cursor: 'pointer', border: '1px solid var(--border)', transition: 'border-color 0.15s' }}>
-              <div style={{ fontSize: 10, color: 'var(--amber)', marginBottom: 4 }}>{s.style}</div>
-              <div style={{ fontSize: 12, color: 'var(--text1)', lineHeight: 1.5 }}>{s.caption}</div>
-              <div style={{ fontSize: 10, color: 'var(--blue)', marginTop: 4 }}>{s.hashtags?.join(' ')}</div>
+            <div 
+              key={i} 
+              onClick={() => { setCaption(s.caption); setHashtags(s.hashtags.join(' ')) }}
+              className="bg-white rounded-xl p-3 mb-2 cursor-pointer border border-gray-100 hover:border-brand-300 hover:shadow-sm transition-all"
+            >
+              <div className="text-xs font-bold text-brand-600 mb-1">{s.style}</div>
+              <div className="text-sm text-gray-700 leading-relaxed">{s.caption}</div>
+              <div className="text-xs font-medium text-brand-500 mt-2">{s.hashtags?.join(' ')}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
-          <label style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '0.14em', display: 'block', marginBottom: 6 }}>HASHTAGS</label>
-          <input value={hashtags} onChange={e => setHashtags(e.target.value)} placeholder="#hashtag1 #hashtag2" className="input-premium" style={{ padding: '10px 12px', fontSize: 13 }} />
+          <label className="block text-xs font-bold text-gray-500 tracking-[0.1em] uppercase mb-2">Hashtags</label>
+          <input 
+            value={hashtags} 
+            onChange={e => setHashtags(e.target.value)} 
+            placeholder="#hashtag1 #hashtag2" 
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-shadow" 
+          />
         </div>
         <div>
-          <label style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '0.14em', display: 'block', marginBottom: 6 }}>SCHEDULE TIME</label>
-          <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} className="input-premium" style={{ padding: '10px 12px', fontSize: 13 }} />
+          <label className="block text-xs font-bold text-gray-500 tracking-[0.1em] uppercase mb-2">Schedule Time</label>
+          <input 
+            type="datetime-local" 
+            value={scheduledAt} 
+            onChange={e => setScheduledAt(e.target.value)} 
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-shadow" 
+          />
         </div>
       </div>
 
-      <button onClick={handleSchedule} disabled={loading || !caption || !scheduledAt} className="btn-amber" style={{ width: '100%', padding: '13px' }}>
-        {loading ? 'SCHEDULING...' : 'SCHEDULE POST'}
+      <button 
+        onClick={handleSchedule} 
+        disabled={loading || !caption || !scheduledAt} 
+        className="w-full bg-gray-900 hover:bg-black text-white py-3.5 rounded-xl font-bold tracking-wide uppercase shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        {loading ? 'Scheduling...' : 'Schedule Post'}
       </button>
     </div>
   )
@@ -190,12 +227,8 @@ export default function InfluencerDashboardPage() {
     try {
       const res = await fetch(`/api/analytics/competitor?username=${competitorInput}`)
       const json = await res.json()
-
-      if (json.success) {
-        setCompetitorData(json.data)
-      } else {
-        setCompetitorError(json.error || 'Failed to analyze competitor.')
-      }
+      if (json.success) setCompetitorData(json.data)
+      else setCompetitorError(json.error || 'Failed to analyze competitor.')
     } catch (err) {
       setCompetitorError('Network error. Please try again.')
     } finally {
@@ -215,226 +248,271 @@ export default function InfluencerDashboardPage() {
   const fmt = (n?: number) => !n ? '0' : n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}K` : `${n}`
   const fmtDelta = (n?: number) => n ? (n > 0 ? `↑ +${n}%` : `↓ ${n}%`) : "0%"
 
-  const tabs: { id: Tab; label: string }[] = [{ id: 'overview', label: 'OVERVIEW' }, { id: 'schedule', label: 'AUTO-POST' }, { id: 'ai', label: '✦ AI STUDIO' }, { id: 'competitors', label: 'COMPETITORS' }]
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'overview', label: 'Overview' }, 
+    { id: 'schedule', label: 'Auto-Post' }, 
+    { id: 'ai', label: '✦ AI Studio' }, 
+    { id: 'competitors', label: 'Competitors' }
+  ]
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '2.5rem 1.5rem' }}>
-      <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
-
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <div style={{ fontSize: 10, color: 'var(--amber)', letterSpacing: '0.2em', marginBottom: 6 }}>INFLUENCER STUDIO</div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '2rem', fontWeight: 600, color: 'var(--text1)' }}>My Dashboard</h1>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: data?.isConnected ? 'var(--green)' : 'var(--amber)', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 11, color: data?.isConnected ? 'var(--green)' : 'var(--amber)' }}>
-            {data?.isLive ? `Live Data: @${data.username}` : data?.isConnected ? 'Instagram Connected' : 'Waiting for Live Connection...'}
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 28, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            style={{ fontSize: 11, letterSpacing: '0.14em', padding: '10px 18px', background: 'none', border: 'none', cursor: 'pointer', color: tab === t.id ? 'var(--amber)' : 'var(--text3)', borderBottom: `2px solid ${tab === t.id ? 'var(--amber)' : 'transparent'}`, transition: 'color 0.15s,border-color 0.15s', marginBottom: -1 }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Overview Tab */}
-      {tab === 'overview' && (
-        <div style={{ animation: 'fadeIn 0.4s ease' }}>
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-              {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 88 }} />)}
+    <div className="min-h-[calc(100vh-4rem)] bg-mesh py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <span className="text-xs font-bold text-brand-600 tracking-[0.2em] uppercase">Influencer Studio</span>
+              <span className={`flex items-center text-xs font-medium px-3 py-1 rounded-full border ${data?.isConnected ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                <span className={`w-2 h-2 rounded-full mr-2 animate-pulse ${data?.isConnected ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                {data?.isLive ? `Live Data: @${data.username}` : data?.isConnected ? 'Instagram Connected' : 'Waiting for Live Connection...'}
+              </span>
             </div>
-          ) : data ? (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
-                <StatCard 
-                  label={data.isLive ? "LIVE FOLLOWERS" : "REACH (7D)"} 
-                  value={data.isLive ? fmt(data.followerCount || 0) : fmt(data.reach || 0)} 
-                  delta={data.isLive ? "Live Sync" : fmtDelta(data.reachGrowth)} 
-                  positive={true} 
-                />
-                <StatCard 
-                  label={data.isLive ? "TOTAL POSTS" : "IMPRESSIONS (7D)"} 
-                  value={data.isLive ? fmt(data.totalPosts || 0) : fmt(data.impressions || 0)} 
-                  delta={data.isLive ? `${fmt(data.recentPhotos || 0)} Photos` : fmtDelta(data.impressionsGrowth)} 
-                  positive={true} 
-                />
-                <StatCard 
-                  label={data.isLive ? "RECENT REELS" : "PROFILE VIEWS"} 
-                  value={data.isLive ? fmt(data.recentReels || 0) : fmt(data.profileViews || 0)} 
-                  delta={data.isLive ? "Last 20 Posts" : fmtDelta(data.profileViewsGrowth)} 
-                  positive={true} 
-                />
-                <StatCard 
-                  label={data.isLive ? "ENGAGEMENT RATE" : "WEBSITE CLICKS"} 
-                  value={data.isLive ? `${data.engagementRate || '0.00'}%` : fmt(data.websiteClicks || 0)} 
-                  delta={data.isLive ? `${fmt(data.totalRecentLikes || 0)} Recent Likes` : fmtDelta(data.websiteClicksGrowth)} 
-                  positive={true} 
-                />
-              </div>
-
-              {/* Reach chart */}
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, padding: '1.2rem', marginBottom: 20 }}>
-                <div style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '0.14em', marginBottom: 12 }}>DAILY REACH & IMPRESSIONS</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
-                  {data.recentInsights?.map((d, i) => {
-                    const maxImp = Math.max(...data.recentInsights.map(r => r.impressions || 0), 1)
-                    return (
-                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: 'var(--blue)', opacity: 0.5, height: `${((d.impressions || 0) / maxImp) * 70}px` }} />
-                        <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: 'var(--amber)', height: `${((d.reach || 0) / maxImp) * 70}px`, marginTop: 2 }} />
-                        <span style={{ fontSize: 9, color: 'var(--text3)' }}>{d.date}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--amber)' }} /><span style={{ fontSize: 10, color: 'var(--text2)' }}>Reach</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--blue)', opacity: 0.5 }} /><span style={{ fontSize: 10, color: 'var(--text2)' }}>Impressions</span></div>
-                </div>
-              </div>
-
-              {/* Upcoming posts */}
-              <div className="section-label" style={{ marginBottom: 12 }}>Upcoming Posts</div>
-              {data.scheduledPosts?.slice(0, 2).map(p => <PostCard key={p.id} post={p} onDelete={handleDelete} />)}
-            </>
-          ) : null}
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mt-2">
+              My <span className="text-gradient">Dashboard</span>
+            </h1>
+          </div>
         </div>
-      )}
 
-      {/* Schedule Tab */}
-      {tab === 'schedule' && (
-        <div style={{ animation: 'fadeIn 0.4s ease' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        {/* Tabs */}
+        <div className="flex gap-8 border-b border-gray-200 mb-8 overflow-x-auto">
+          {tabs.map(t => (
+            <button 
+              key={t.id} 
+              onClick={() => setTab(t.id)}
+              className={`pb-4 text-sm font-bold tracking-[0.1em] uppercase whitespace-nowrap transition-colors ${
+                tab === t.id ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Overview Tab */}
+        {tab === 'overview' && (
+          <div className="animate-fadeUp">
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-gray-200/50 rounded-3xl animate-pulse" />)}
+              </div>
+            ) : data ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <StatCard 
+                    label={data.isLive ? "LIVE FOLLOWERS" : "REACH (7D)"} 
+                    value={data.isLive ? fmt(data.followerCount || 0) : fmt(data.reach || 0)} 
+                    delta={data.isLive ? "Live Sync" : fmtDelta(data.reachGrowth)} 
+                    positive={true} 
+                  />
+                  <StatCard 
+                    label={data.isLive ? "TOTAL POSTS" : "IMPRESSIONS (7D)"} 
+                    value={data.isLive ? fmt(data.totalPosts || 0) : fmt(data.impressions || 0)} 
+                    delta={data.isLive ? `${fmt(data.recentPhotos || 0)} Photos` : fmtDelta(data.impressionsGrowth)} 
+                    positive={true} 
+                  />
+                  <StatCard 
+                    label={data.isLive ? "RECENT REELS" : "PROFILE VIEWS"} 
+                    value={data.isLive ? fmt(data.recentReels || 0) : fmt(data.profileViews || 0)} 
+                    delta={data.isLive ? "Last 20 Posts" : fmtDelta(data.profileViewsGrowth)} 
+                    positive={true} 
+                  />
+                  <StatCard 
+                    label={data.isLive ? "ENGAGEMENT RATE" : "WEBSITE CLICKS"} 
+                    value={data.isLive ? `${data.engagementRate || '0.00'}%` : fmt(data.websiteClicks || 0)} 
+                    delta={data.isLive ? `${fmt(data.totalRecentLikes || 0)} Recent Likes` : fmtDelta(data.websiteClicksGrowth)} 
+                    positive={true} 
+                  />
+                </div>
+
+                {/* Reach chart */}
+                <div className="glass p-8 rounded-3xl mb-8 flex flex-col relative overflow-hidden">
+                  <h3 className="text-xs font-bold text-gray-500 tracking-[0.1em] uppercase mb-8 relative z-10">Daily Reach & Impressions</h3>
+                  <div className="flex items-end gap-3 h-32 border-b border-gray-200/50 pb-2 relative z-10">
+                    {data.recentInsights?.map((d, i) => {
+                      const maxImp = Math.max(...data.recentInsights.map(r => r.impressions || 0), 1)
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                          <div className="w-full rounded-t-sm bg-brand-200" style={{ height: `${((d.impressions || 0) / maxImp) * 80}px` }} />
+                          <div className="w-full rounded-t-sm bg-brand-500" style={{ height: `${((d.reach || 0) / maxImp) * 80}px`, marginTop: '2px' }} />
+                          <span className="text-[10px] text-gray-400 font-medium mt-1">{d.date}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex items-center gap-6 mt-6 relative z-10">
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-brand-500 shadow-sm" /><span className="text-xs font-medium text-gray-600">Reach</span></div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-brand-200 shadow-sm" /><span className="text-xs font-medium text-gray-600">Impressions</span></div>
+                  </div>
+                </div>
+
+                {/* Upcoming posts */}
+                <h3 className="text-sm font-bold text-gray-900 tracking-wide uppercase mb-4">Upcoming Posts</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {data.scheduledPosts?.slice(0, 2).map(p => <PostCard key={p.id} post={p} onDelete={handleDelete} />)}
+                </div>
+              </>
+            ) : null}
+          </div>
+        )}
+
+        {/* Schedule Tab */}
+        {tab === 'schedule' && (
+          <div className="animate-fadeUp grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
-              <div className="section-label" style={{ marginBottom: 16 }}>Compose New Post</div>
+              <h3 className="text-sm font-bold text-gray-900 tracking-wide uppercase mb-4">Compose New Post</h3>
               <ComposePost onSchedule={handleSchedule} />
             </div>
             <div>
-              <div className="section-label" style={{ marginBottom: 16 }}>Queue</div>
-              {data?.scheduledPosts?.length ? data.scheduledPosts.map(p => <PostCard key={p.id} post={p} onDelete={handleDelete} />) : (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text3)', fontSize: 13 }}>No posts scheduled yet.</div>
+              <h3 className="text-sm font-bold text-gray-900 tracking-wide uppercase mb-4">Queue</h3>
+              {data?.scheduledPosts?.length ? (
+                data.scheduledPosts.map(p => <PostCard key={p.id} post={p} onDelete={handleDelete} />)
+              ) : (
+                <div className="glass p-12 rounded-3xl text-center text-gray-500 text-sm font-medium">No posts scheduled yet.</div>
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* AI Studio Tab */}
-      {tab === 'ai' && (
-        <div style={{ animation: 'fadeIn 0.4s ease' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
-            <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', height: 520 }}>
-              <div style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: 'var(--amber)', fontSize: 16 }}>✦</span>
-                <span style={{ fontSize: 11, letterSpacing: '0.14em', color: 'var(--text1)' }}>INFLUUR AI STUDIO</span>
-                <span style={{ fontSize: 10, color: 'var(--text3)', marginLeft: 'auto' }}>Powered by AI</span>
+        {/* AI Studio Tab */}
+        {tab === 'ai' && (
+          <div className="animate-fadeUp grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 glass rounded-3xl flex flex-col h-[600px] overflow-hidden border border-gray-100">
+              <div className="p-5 bg-white/50 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-brand-600 text-lg">✦</span>
+                  <span className="text-sm font-bold text-gray-900 tracking-widest uppercase">Influur AI Studio</span>
+                </div>
+                <span className="text-xs font-medium text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Powered by AI</span>
               </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {chatMessages.map((m, i) => (
-                  <div key={i} style={{ marginBottom: 14, display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                    <div style={{ maxWidth: '80%', background: m.role === 'user' ? 'var(--amber-dim2)' : 'var(--surface3)', border: `1px solid ${m.role === 'user' ? 'rgba(212,168,71,0.2)' : 'var(--border)'}`, borderRadius: 6, padding: '10px 14px', fontSize: 13, color: 'var(--text1)', lineHeight: 1.6 }}>
-                      {m.role === 'assistant' && <div style={{ fontSize: 9, color: 'var(--amber)', letterSpacing: '0.14em', marginBottom: 4 }}>✦ INFLUUR AI</div>}
+                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${
+                      m.role === 'user' 
+                        ? 'bg-brand-600 text-white rounded-tr-sm' 
+                        : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
+                    }`}>
+                      {m.role === 'assistant' && <div className="text-[10px] font-bold text-brand-600 tracking-widest uppercase mb-2">✦ INFLUUR AI</div>}
                       {m.content}
                     </div>
                   </div>
                 ))}
-                {chatLoading && <div style={{ fontSize: 12, color: 'var(--text3)', padding: '8px' }}>AI is thinking...</div>}
+                {chatLoading && <div className="text-xs font-medium text-gray-400 pl-2 animate-pulse">AI is typing...</div>}
               </div>
-              <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
-                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
-                  placeholder="Ask AI anything about your content strategy..." className="input-premium" style={{ flex: 1, padding: '10px 12px', fontSize: 12 }} />
-                <button onClick={sendChat} disabled={chatLoading || !chatInput.trim()} className="btn-amber" style={{ padding: '10px 16px', fontSize: 11 }}>SEND</button>
+              
+              <div className="p-4 bg-white/50 border-t border-gray-100 flex gap-3">
+                <input 
+                  value={chatInput} 
+                  onChange={e => setChatInput(e.target.value)} 
+                  onKeyDown={e => e.key === 'Enter' && sendChat()}
+                  placeholder="Ask AI anything about your content strategy..." 
+                  className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-shadow" 
+                />
+                <button 
+                  onClick={sendChat} 
+                  disabled={chatLoading || !chatInput.trim()} 
+                  className="bg-gray-900 hover:bg-black text-white px-6 rounded-xl font-bold text-sm tracking-wider uppercase shadow-soft disabled:opacity-50 transition-all"
+                >
+                  Send
+                </button>
               </div>
             </div>
+
             <div>
-              <div className="section-label" style={{ marginBottom: 14 }}>Quick Actions</div>
-              {['Write me a viral Reel caption for a skincare routine', 'What are the best hashtags for lifestyle content in India?', 'Analyse my posting schedule and suggest improvements', 'Write a compelling bio for my profile'].map(p => (
-                <button key={p} onClick={() => { setChatInput(p); }}
-                  style={{ width: '100%', textAlign: 'left', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 4, padding: '10px 12px', fontSize: 12, color: 'var(--text2)', cursor: 'pointer', marginBottom: 8, lineHeight: 1.4, transition: 'color 0.15s,border-color 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text1)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--amber)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text2)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)' }}>
+              <h3 className="text-sm font-bold text-gray-900 tracking-wide uppercase mb-4">Quick Actions</h3>
+              {[
+                'Write me a viral Reel caption for a skincare routine', 
+                'What are the best hashtags for lifestyle content in India?', 
+                'Analyse my posting schedule and suggest improvements', 
+                'Write a compelling bio for my profile'
+              ].map(p => (
+                <button 
+                  key={p} 
+                  onClick={() => setChatInput(p)}
+                  className="w-full text-left glass p-4 rounded-2xl text-sm text-gray-600 hover:text-brand-700 hover:border-brand-200 hover:-translate-y-0.5 transition-all mb-3 leading-relaxed font-medium"
+                >
                   {p}
                 </button>
               ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Competitor Tab */}
-      {tab === 'competitors' && (
-        <div style={{ animation: 'fadeIn 0.4s ease' }}>
-          
-          {/* The Search Bar */}
-          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginBottom: 24 }}>
-            <div style={{ fontSize: 10, color: 'var(--amber)', letterSpacing: '0.14em', marginBottom: 12 }}>ENTERPRISE INTELLIGENCE</div>
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--text1)', marginBottom: 16 }}>Competitor Spy</h3>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <input 
-                value={competitorInput} 
-                onChange={e => setCompetitorInput(e.target.value)} 
-                onKeyDown={e => e.key === 'Enter' && analyzeCompetitor()}
-                placeholder="Enter Instagram handle (e.g., swiggyindia, theweeknd)" 
-                className="input-premium" 
-                style={{ flex: 1, padding: '12px 16px', fontSize: 14 }} 
-              />
-              <button onClick={analyzeCompetitor} disabled={competitorLoading || !competitorInput.trim()} className="btn-amber" style={{ padding: '0 24px' }}>
-                {competitorLoading ? 'SCANNING...' : 'ANALYZE'}
-              </button>
+        {/* Competitor Tab */}
+        {tab === 'competitors' && (
+          <div className="animate-fadeUp">
+            
+            <div className="glass p-8 rounded-3xl mb-8">
+              <div className="text-xs font-bold text-accent-500 tracking-[0.1em] uppercase mb-3">Enterprise Intelligence</div>
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-6">Competitor Spy</h3>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <span className="absolute left-4 top-3.5 text-gray-400 font-bold">@</span>
+                  <input 
+                    value={competitorInput} 
+                    onChange={e => setCompetitorInput(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && analyzeCompetitor()}
+                    placeholder="Enter Instagram handle (e.g. swiggyindia)" 
+                    className="w-full pl-9 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none shadow-sm transition-shadow" 
+                  />
+                </div>
+                <button 
+                  onClick={analyzeCompetitor} 
+                  disabled={competitorLoading || !competitorInput.trim()} 
+                  className="bg-accent-600 hover:bg-accent-500 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide uppercase shadow-soft disabled:opacity-50 transition-all"
+                >
+                  {competitorLoading ? 'Scanning...' : 'Analyze'}
+                </button>
+              </div>
+              {competitorError && <div className="text-sm font-medium text-rose-500 mt-4 bg-rose-50 p-3 rounded-lg border border-rose-100">{competitorError}</div>}
             </div>
-            {competitorError && <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 12 }}>{competitorError}</div>}
-          </div>
 
-          {/* The Results Dashboard */}
-          {competitorData && (
-            <div style={{ animation: 'fadeIn 0.4s ease' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'var(--text2)' }}>@</div>
-                <div>
-                  <div style={{ fontSize: '1.2rem', color: 'var(--text1)', fontWeight: 500 }}>{competitorData.username}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>Live Meta Graph Data</div>
+            {competitorData && (
+              <div className="animate-fadeUp mt-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-brand-500 to-accent-500 flex items-center justify-center text-white text-2xl font-bold shadow-soft">@</div>
+                  <div>
+                    <div className="text-2xl font-extrabold text-gray-900">{competitorData.username}</div>
+                    <div className="text-sm font-medium text-gray-500">Live Meta Graph Data</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatCard 
+                    label="FOLLOWERS" 
+                    value={fmt(competitorData.followers || 0)} 
+                    delta="Public Count" 
+                    positive={true} 
+                  />
+                  <StatCard 
+                    label="TOTAL POSTS" 
+                    value={fmt(competitorData.totalPosts || 0)} 
+                    delta="Lifetime Media" 
+                    positive={true} 
+                  />
+                  <StatCard 
+                    label="EST. ENGAGEMENT" 
+                    value={`${competitorData.avgEngagementRate}%`} 
+                    delta="Last 10 Posts" 
+                    positive={parseFloat(competitorData.avgEngagementRate) > 2.0} 
+                  />
+                  <StatCard 
+                    label="RECENT LIKES" 
+                    value={fmt(competitorData.recentLikes || 0)} 
+                    delta="Last 10 Posts" 
+                    positive={true} 
+                  />
                 </div>
               </div>
+            )}
+          </div>
+        )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                <StatCard 
-                  label="FOLLOWERS" 
-                  value={fmt(competitorData.followers || 0)} 
-                  delta="Public Count" 
-                  positive={true} 
-                />
-                <StatCard 
-                  label="TOTAL POSTS" 
-                  value={fmt(competitorData.totalPosts || 0)} 
-                  delta="Lifetime Media" 
-                  positive={true} 
-                />
-                <StatCard 
-                  label="EST. ENGAGEMENT" 
-                  value={`${competitorData.avgEngagementRate}%`} 
-                  delta="Last 10 Posts" 
-                  positive={parseFloat(competitorData.avgEngagementRate) > 2.0} 
-                />
-                <StatCard 
-                  label="RECENT LIKES" 
-                  value={fmt(competitorData.recentLikes || 0)} 
-                  delta="Last 10 Posts" 
-                  positive={true} 
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      </div>
     </div>
   )
 }

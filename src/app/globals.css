@@ -32,23 +32,36 @@ html {
 }
 
 body {
-  background: var(--ink);
-  color: var(--text1);
-  font-family: 'DM Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(150, 150, 150, 0.5); }
 
-/* Typography helpers */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-soft;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-accent-500;
+  }
+
+  .bg-mesh {
+    background-color: #fafafa;
+    background-image: 
+      radial-gradient(at 40% 20%, hsla(262, 83%, 86%, 0.4) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(343, 100%, 76%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(262, 83%, 86%, 0.3) 0px, transparent 50%);
+  }
+}
+
 .font-serif { font-family: 'Cormorant Garamond', serif; }
 .font-mono { font-family: 'DM Mono', monospace; }
 
-/* Premium input */
 .input-premium {
   background: var(--surface2);
   border: 1px solid var(--border2);
@@ -67,11 +80,11 @@ body {
   box-shadow: 0 0 0 3px var(--amber-dim2);
 }
 
-/* Shimmer skeleton */
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
 .skeleton {
   background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
   background-size: 200% 100%;
@@ -79,7 +92,6 @@ body {
   border-radius: 4px;
 }
 
-/* Noise overlay for depth */
 .noise::after {
   content: '';
   position: fixed;
@@ -90,13 +102,11 @@ body {
   opacity: 0.4;
 }
 
-/* Amber glow line */
 .glow-line {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--amber), transparent);
 }
 
-/* Card premium */
 .card-premium {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -105,14 +115,12 @@ body {
 }
 .card-premium:hover { border-color: var(--border2); }
 
-/* Status badges */
 .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 3px; font-size: 10px; letter-spacing: 0.12em; font-weight: 500; text-transform: uppercase; }
 .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(212,168,71,0.2); }
 .badge-green { background: rgba(63,160,106,0.1); color: var(--green); border: 1px solid rgba(63,160,106,0.2); }
 .badge-red { background: rgba(192,80,80,0.1); color: var(--red); border: 1px solid rgba(192,80,80,0.2); }
 .badge-muted { background: var(--surface3); color: var(--text2); border: 1px solid var(--border); }
 
-/* Section label */
 .section-label {
   font-size: 10px;
   letter-spacing: 0.2em;
@@ -129,7 +137,6 @@ body {
   background: var(--border);
 }
 
-/* Btn styles */
 .btn-amber {
   background: var(--amber);
   color: #09090e;

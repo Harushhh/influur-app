@@ -1,15 +1,18 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"] 
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // Vector extension temporarily removed for local development
 }
 
 enum Role {
-  MARKETER
-  INFLUENCER
+  BRAND
+  CREATOR
+  ADMIN
 }
 
 enum SubscriptionTier {
@@ -20,15 +23,17 @@ enum SubscriptionTier {
 
 enum CampaignStatus {
   DRAFT
-  SENT
-  FAILED
+  PUBLISHED
+  PAUSED
+  COMPLETED
+  CANCELLED
 }
 
-enum PostStatus {
-  DRAFT
-  SCHEDULED
-  PUBLISHED
-  FAILED
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  ACCEPTED
+  REJECTED
 }
 
 enum OptInStatus {
@@ -39,162 +44,90 @@ enum OptInStatus {
 }
 
 model User {
-  id                String            @id @default(cuid())
-  email             String            @unique
+  id                String    @id @default(cuid())
+  email             String    @unique
   name              String
-  username          String?           @unique
+  username          String?   @unique
   avatarUrl         String?
-  role              Role
-  bio               String?
-  phone             String?           // hidden until opt-in unlocked
-  personalEmail     String?           // hidden until opt-in unlocked
-  rateCard          Json?             // hidden until opt-in unlocked
-  niche             String[]
-  followerCount     Int?
-  engagementRate    Float?
-  isVerified        Boolean           @default(false)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  role              Role      @default(CREATOR)
+  isVerified        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   subscription      Subscription?
+  influencerProfile InfluencerProfile? 
+
   oauthTokens       OAuthToken[]
   searchHistory     SearchHistory[]
-  savedByMarketers  SavedInfluencer[] @relation("InfluencerSaved")
-  savedInfluencers  SavedInfluencer[] @relation("MarketerSaves")
-  sentCampaigns     EmailCampaign[]   @relation("CampaignSender")
-  receivedCampaigns EmailCampaign[]   @relation("CampaignRecipients")
-  scheduledPosts    ScheduledPost[]
+  
+  campaigns         Campaign[]        @relation("BrandCampaigns")
+  savedInfluencers  SavedInfluencer[] @relation("BrandSaves")
+  
+  applications      Application[]     @relation("CreatorApplications")
+  savedByBrands     SavedInfluencer[] @relation("InfluencerSaved")
 
   @@index([role])
-  @@index([engagementRate])
+  @@index([email])
 }
 
 model Subscription {
-  id               String           @id @default(cuid())
-  userId           String           @unique
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier             SubscriptionTier @default(FREE)
-  stripeCustomerId String?
-  stripePriceId    String?
-  currentPeriodEnd DateTime?
-  cancelAtPeriodEnd Boolean         @default(false)
-  unlocksRemaining Int              @default(0)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id                String           @id @default(cuid())
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier              SubscriptionTier @default(FREE)
+  stripeCustomerId  String?
+  stripePriceId     String?
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean          @default(false)
+  unlocksRemaining  Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
-model OAuthToken {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider      String   // "instagram" | "facebook"
-  accessToken   String
-  refreshToken  String?
-  tokenType     String   @default("Bearer")
-  scope         String[]
-  expiresAt     DateTime?
-  instagramId   String?
-  pageId        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([userId, provider])
-  @@index([provider])
-}
-
-model SearchHistory {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  query       String
-  handle      String?
-  reelUrl     String?
-  resultData  Json?
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([handle])
-}
-
-model SavedInfluencer {
-  id              String      @id @default(cuid())
+model InfluencerProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Relations made optional to support saving external un-registered influencers
-  marketerId      String?
-  marketer        User?       @relation("MarketerSaves", fields: [marketerId], references: [id], onDelete: Cascade)
-  influencerId    String?
-  influencer      User?       @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
+  bio               String?  @db.Text
+  location          String?
+  niche             String[] 
+  
+  totalAudience     Int      @default(0)
+  avgEngagementRate Float    @default(0.0)
+  authenticityScore Float?   
 
-  // External Data Fields (Populated by Meta Graph API)
-  username        String?
-  name            String?
-  avatar          String?
-  followers       Int?
-  engagementRate  String?
-  estCpm          String?
+  igHandle          String?  @unique
+  igFollowers       Int      @default(0)
+  igEngagement      Float    @default(0.0)
+  igRateCard        Float?   
+  
+  ttHandle          String?  @unique
+  ttFollowers       Int      @default(0)
+  ttEngagement      Float    @default(0.0)
+  ttRateCard        Float?
 
-  // Existing CRM Fields
-  optInStatus     OptInStatus @default(PENDING)
-  notes           String?
-  tags            String[]
-  isUnlocked      Boolean     @default(false)
-  unlockedAt      DateTime?
-  savedAt         DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  ytHandle          String?  @unique
+  ytSubscribers     Int      @default(0)
+  ytAvgViews        Int      @default(0)
+  ytRateCard        Float?
 
-  @@index([optInStatus])
-  @@index([marketerId])
+  audienceData      Json?    
+  growthHistory     Json?    
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([totalAudience(sort: Desc)])
+  @@index([avgEngagementRate(sort: Desc)])
 }
 
-model EmailCampaign {
-  id          String         @id @default(cuid())
-  senderId    String
-  sender      User           @relation("CampaignSender", fields: [senderId], references: [id], onDelete: Cascade)
-  recipients  User[]         @relation("CampaignRecipients")
-  subject     String
-  bodyHtml    String
-  bodyText    String
-  status      CampaignStatus @default(DRAFT)
-  sentAt      DateTime?
-  openCount   Int            @default(0)
-  replyCount  Int            @default(0)
-  aiGenerated Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  @@index([senderId])
-  @@index([status])
-}
-
-model ScheduledPost {
-  id              String     @id @default(cuid())
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  caption         String
-  mediaUrls       String[]
-  hashtags        String[]
-  platform        String     @default("instagram")
-  status          PostStatus @default(DRAFT)
-  scheduledAt     DateTime
-  publishedAt     DateTime?
-  instagramPostId String?
-  aiGenerated     Boolean    @default(false)
-  insights        Json?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  @@index([userId])
-  @@index([scheduledAt])
-  @@index([status])
-}
-
-// 🔥 UPDATED: Advanced CreatorDNA for Discovery & AI Lookalikes
 model CreatorDNA {
   id             String   @id @default(cuid())
   username       String   @unique
   name           String
   avatar         String?
-  bio            String?
+  bio            String?  @db.Text
   followers      Int      @default(0)
   engagement     Float    @default(0.0)
   location       String?
@@ -204,20 +137,116 @@ model CreatorDNA {
   isVerified     Boolean  @default(false)
   hasEmail       Boolean  @default(false)
 
-  // Complex nested data
-  advancedData   Json?    // Stores the AI-estimated Audience Demographics
-  recentPosts    Json?    // Stores the latest media array
-  metadata       Json?    // Preserved for your legacy requirements
+  advancedData   Json?
+  recentPosts    Json?
+  metadata       Json?
   
-  // AI Lookalike Vector mapping
-  embedding      Unsupported("vector(768)")?
+  // AI Lookalike Vector mapping (Temporarily paused for local DB compatibility)
+  // embedding      Unsupported("vector(768)")?
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // Indexes to ensure Pre-Fetch Discovery search is lightning fast
   @@index([followers(sort: Desc)])
   @@index([engagement(sort: Desc)])
   @@index([category])
   @@index([location])
+}
+
+model Campaign {
+  id                String         @id @default(cuid())
+  brandId           String
+  brand             User           @relation("BrandCampaigns", fields: [brandId], references: [id], onDelete: Cascade)
+  
+  title             String
+  description       String         @db.Text
+  deliverables      String[]       
+  targetNiche       String[]
+  minFollowers      Int            @default(0)
+  budgetRange       String?        
+  
+  status            CampaignStatus @default(DRAFT)
+  applicationDealine DateTime?
+  
+  applications      Application[]
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([brandId])
+  @@index([status])
+}
+
+model Application {
+  id                String            @id @default(cuid())
+  campaignId        String
+  campaign          Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  creatorId         String
+  creator           User              @relation("CreatorApplications", fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  coverLetter       String            @db.Text
+  proposedRate      Float?
+  status            ApplicationStatus @default(PENDING)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([campaignId, creatorId]) 
+  @@index([creatorId])
+  @@index([status])
+}
+
+model SavedInfluencer {
+  id              String      @id @default(cuid())
+  
+  brandId         String?
+  brand           User?       @relation("BrandSaves", fields: [brandId], references: [id], onDelete: Cascade)
+  
+  influencerId    String?
+  influencer      User?       @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
+
+  externalUsername String?
+  externalData     Json?      
+  
+  optInStatus     OptInStatus @default(PENDING)
+  notes           String?     @db.Text
+  listName        String      @default("Default List") 
+  
+  savedAt         DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([optInStatus])
+  @@index([brandId])
+  @@index([listName])
+}
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query       String
+  filtersUsed Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model OAuthToken {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider      String    
+  accessToken   String
+  refreshToken  String?
+  tokenType     String    @default("Bearer")
+  scope         String[]
+  expiresAt     DateTime?
+  accountId     String?   
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, provider])
+  @@index([provider])
 }

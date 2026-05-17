@@ -2,30 +2,43 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', textAlign: 'center', padding: '2rem', animation: 'fadeIn 0.8s ease' }}>
-      <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-mesh px-4 py-12 relative overflow-hidden animate-fadeUp">
       
-      <div style={{ fontSize: 11, color: 'var(--amber)', letterSpacing: '0.2em', marginBottom: 20 }}>
-        WELCOME TO INFLUUR
+      {/* Eyebrow Label */}
+      <div className="text-xs font-bold text-brand-600 tracking-[0.2em] mb-6 uppercase">
+        Welcome to Influur
       </div>
       
-      <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '4.5rem', fontWeight: 600, color: 'var(--text1)', marginBottom: 24, maxWidth: 900, lineHeight: 1.1 }}>
+      {/* Headline */}
+      <h1 className="text-5xl sm:text-7xl font-extrabold text-gray-900 mb-6 max-w-4xl leading-[1.1] text-center tracking-tight">
         The Elite Omni-Channel <br/>
-        <span style={{ fontStyle: 'italic', color: 'var(--amber)' }}>Influencer CRM</span>
+        {/* Blending your legacy serif font with the new modern gradient */}
+        <span className="font-serif italic text-gradient pr-4">Influencer CRM</span>
       </h1>
       
-      <p style={{ color: 'var(--text3)', fontSize: 16, maxWidth: 550, marginBottom: 48, lineHeight: 1.6 }}>
-        Stop guessing. Start scaling. Discover verified creators, access live Meta Graph data, and automate your outreach campaigns in one dark-tech platform.
+      {/* Subtitle */}
+      <p className="text-gray-600 text-lg sm:text-xl font-medium max-w-2xl mb-12 leading-relaxed text-center">
+        Stop guessing. Start scaling. Discover verified creators, access live Meta Graph data, and automate your outreach campaigns in one intelligent platform.
       </p>
       
-      <div style={{ display: 'flex', gap: 16 }}>
-        <Link href="/discover" className="btn-amber" style={{ padding: '16px 36px', fontSize: 12, textDecoration: 'none', borderRadius: 4, letterSpacing: '0.1em' }}>
-          ENTER PLATFORM
+      {/* CTA Buttons */}
+      <div className="flex flex-col sm:flex-row gap-5 z-10 w-full sm:w-auto">
+        {/* BRAND ENTRY: Points straight to our new enterprise login page */}
+        <Link 
+          href="/brand/login" 
+          className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-4 text-xs sm:text-sm font-bold rounded-2xl tracking-[0.1em] uppercase transition-all duration-300 hover:-translate-y-1 hover:shadow-float shadow-soft text-center"
+        >
+          Enter Brand Portal
         </Link>
-        <Link href="/influencer/login" style={{ padding: '16px 36px', fontSize: 12, textDecoration: 'none', borderRadius: 4, letterSpacing: '0.1em', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text2)' }}>
-          CREATOR LOGIN
+        {/* CREATOR ENTRY: Points to the creator login page */}
+        <Link 
+          href="/influencer/login" 
+          className="glass text-gray-700 hover:text-brand-600 px-8 py-4 text-xs sm:text-sm font-bold rounded-2xl tracking-[0.1em] uppercase transition-all duration-300 hover:-translate-y-1 text-center"
+        >
+          Creator Login
         </Link>
       </div>
+
     </div>
   )
 }
