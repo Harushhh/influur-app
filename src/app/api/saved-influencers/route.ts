@@ -9,7 +9,7 @@ export async function GET() {
 
     if (!user) return NextResponse.json({ success: true, data: [] })
 
-    // 1. Fetch saved records using the 'brandId' field from your schema
+    // 1. Fetch saved records using 'brandId'
     const saved = await prisma.savedInfluencer.findMany({
       where: { brandId: user.id },
       include: { influencer: true }, 
@@ -22,20 +22,18 @@ export async function GET() {
       where: { username: { in: usernames } }
     })
 
-    // 3. Map data - Accessing only fields that exist in your Prisma schema
+    // 3. Map data - strictly accessing valid fields
     const data = saved.map(s => {
       const dna = dnas.find(d => d.username === s.influencer?.username)
       
       return {
         id: s.id,
+        // Using only fields present in the 'influencer' relation
         username: s.influencer?.username || 'unknown',
         name: s.influencer?.name || 'Unknown',
         avatar: s.influencer?.avatarUrl || '',
-        
-        // These fields default to 0 as they are not on the User/SavedInfluencer model
-        followers: 0, 
+        followers: 0,
         engagementRate: '0.00',
-        
         optInStatus: s.optInStatus,
         cpm: dna?.cpm || 0,
         realReach: dna?.realReach || 0,
