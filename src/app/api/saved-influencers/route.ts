@@ -11,7 +11,7 @@ export async function GET() {
 
     // 1. Fetch the saved CRM records
     const saved = await prisma.savedInfluencer.findMany({
-      where: { marketerId: user.id },
+      where: { brandId: user.id },
       include: { influencer: true }, 
       orderBy: { savedAt: 'desc' }
     })

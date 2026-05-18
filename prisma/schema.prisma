@@ -6,7 +6,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // Vector extension temporarily removed for local development
 }
 
 enum Role {
@@ -60,10 +59,11 @@ model User {
   oauthTokens   OAuthToken[]
   searchHistory SearchHistory[]
 
-  campaigns        Campaign[]        @relation("BrandCampaigns")
+  campaigns        Campaign[]      @relation("BrandCampaigns")
   savedInfluencers SavedInfluencer[] @relation("BrandSaves")
 
-  applications  Application[]     @relation("CreatorApplications")
+  applications  Application[]   @relation("CreatorApplications")
+  // Influencers saved by this user
   savedByBrands SavedInfluencer[] @relation("InfluencerSaved")
 
   @@index([role])
@@ -71,17 +71,17 @@ model User {
 }
 
 model Subscription {
-  id                String           @id @default(cuid())
-  userId            String           @unique
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier              SubscriptionTier @default(FREE)
-  stripeCustomerId  String?
-  stripePriceId     String?
-  currentPeriodEnd  DateTime?
-  cancelAtPeriodEnd Boolean          @default(false)
-  unlocksRemaining  Int              @default(0)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier             SubscriptionTier @default(FREE)
+  stripeCustomerId String?
+  stripePriceId    String?
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean         @default(false)
+  unlocksRemaining Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }
 
 model InfluencerProfile {
@@ -141,9 +141,6 @@ model CreatorDNA {
   recentPosts  Json?
   metadata     Json?
 
-  // AI Lookalike Vector mapping (Temporarily paused for local DB compatibility)
-  // embedding      Unsupported("vector(768)")?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -154,9 +151,9 @@ model CreatorDNA {
 }
 
 model Campaign {
-  id      String @id @default(cuid())
-  brandId String
-  brand   User   @relation("BrandCampaigns", fields: [brandId], references: [id], onDelete: Cascade)
+  id           String @id @default(cuid())
+  brandId      String
+  brand        User   @relation("BrandCampaigns", fields: [brandId], references: [id], onDelete: Cascade)
 
   title        String
   description  String   @db.Text
@@ -200,14 +197,13 @@ model Application {
 model SavedInfluencer {
   id String @id @default(cuid())
 
-  brandId String?
-  brand   User?   @relation("BrandSaves", fields: [brandId], references: [id], onDelete: Cascade)
+  // The user who performed the save
+  brandId String
+  brand   User   @relation("BrandSaves", fields: [brandId], references: [id], onDelete: Cascade)
 
-  influencerId String?
-  influencer   User?   @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
-
-  externalUsername String?
-  externalData     Json?
+  // The influencer who was saved
+  influencerId String
+  influencer   User   @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
 
   optInStatus OptInStatus @default(PENDING)
   notes       String?     @db.Text
@@ -218,16 +214,17 @@ model SavedInfluencer {
 
   @@index([optInStatus])
   @@index([brandId])
+  @@index([influencerId])
   @@index([listName])
 }
 
 model SearchHistory {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  query       String
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query     String
   filtersUsed Json?
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }
