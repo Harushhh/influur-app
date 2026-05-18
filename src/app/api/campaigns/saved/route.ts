@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma' // 👈 Fixed: Used curly braces
 
 // Force Next.js to fetch fresh data every time instead of caching it
 export const dynamic = 'force-dynamic'

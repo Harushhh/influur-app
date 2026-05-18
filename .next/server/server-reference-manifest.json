@@ -2,33 +2,21 @@
   "node": {
     "834dc8ce6a4d46a2271f0461ed9f5641136b7ab6": {
       "workers": {
-        "app/influencer/marketplace/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!",
-        "app/brand/campaigns/new/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!"
+        "app/influencer/marketplace/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!"
       },
       "layer": {
-        "app/influencer/marketplace/page": "action-browser",
-        "app/brand/campaigns/new/page": "action-browser"
+        "app/influencer/marketplace/page": "action-browser"
       }
     },
     "bc4bdfff1f4250922b33d922a6c1fc8a12859a1f": {
       "workers": {
-        "app/influencer/marketplace/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!",
-        "app/brand/campaigns/new/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!"
+        "app/influencer/marketplace/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Ccampaign.ts%22%2C%5B%22submitApplication%22%2C%22createCampaign%22%5D%5D%5D&__client_imported__=true!"
       },
       "layer": {
-        "app/influencer/marketplace/page": "action-browser",
-        "app/brand/campaigns/new/page": "action-browser"
-      }
-    },
-    "5813c798ee14f2f39e193b38eecb828b8a80f417": {
-      "workers": {
-        "app/brand/campaigns/[id]/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CHarsj%5C%5CDesktop%5C%5Cinfluur%5C%5Cinfluur%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Capplication.ts%22%2C%5B%22updateApplicationStatus%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/brand/campaigns/[id]/page": "rsc"
+        "app/influencer/marketplace/page": "action-browser"
       }
     }
   },
   "edge": {},
-  "encryptionKey": "enXSoqms8Fpyl0Vu+reo5wMin7tFwGJWTJywVpCDXEk="
+  "encryptionKey": "CLDsEo5tDT2vnDCXwzZc69WfJkOg7qUTZAd5SLgGHPI="
 }

@@ -1,11 +1,9 @@
 {
-  "/brand/dashboard/page": "app/brand/dashboard/page.js",
-  "/page": "app/page.js",
-  "/discover/page": "app/discover/page.js",
   "/influencer/login/page": "app/influencer/login/page.js",
+  "/page": "app/page.js",
+  "/influencer/dashboard/page": "app/influencer/dashboard/page.js",
   "/api/auth/instagram/route": "app/api/auth/instagram/route.js",
-  "/messages/page": "app/messages/page.js",
-  "/influencer/marketplace/page": "app/influencer/marketplace/page.js",
   "/api/auth/instagram/callback/route": "app/api/auth/instagram/callback/route.js",
-  "/influencer/dashboard/page": "app/influencer/dashboard/page.js"
+  "/influencer/marketplace/page": "app/influencer/marketplace/page.js",
+  "/messages/page": "app/messages/page.js"
 }

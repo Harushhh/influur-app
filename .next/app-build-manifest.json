@@ -1,65 +1,30 @@
 {
   "pages": {
+    "/influencer/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/influencer/login/page.js"
+    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/marketer/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/marketer/dashboard/page.js"
-    ],
     "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
-    ],
-    "/influencer/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/influencer/login/page.js"
-    ],
-    "/brand/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/brand/dashboard/page.js"
-    ],
-    "/discover/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/discover/page.js"
-    ],
-    "/influencer/marketplace/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/influencer/marketplace/page.js"
     ],
     "/influencer/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/influencer/dashboard/page.js"
     ],
-    "/brand/login/page": [
+    "/influencer/marketplace/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/brand/login/page.js"
-    ],
-    "/brand/signup/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/brand/signup/page.js"
-    ],
-    "/brand/campaigns/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/brand/campaigns/[id]/page.js"
-    ],
-    "/brand/campaigns/new/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/brand/campaigns/new/page.js"
+      "static/chunks/app/influencer/marketplace/page.js"
     ],
     "/messages/page": [
       "static/chunks/webpack.js",

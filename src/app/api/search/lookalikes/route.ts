@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma' // 👈 Fixed: Used curly braces
 
 // Initialize Gemini with your key from .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
@@ -14,14 +14,12 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Generate the "Semantic DNA" using Gemini's embedding model
-    // This turns the creator's identity into a mathematical coordinate
     const model = genAI.getGenerativeModel({ model: "text-embedding-004" })
     const dnaResult = await model.embedContent(`Instagram influencer profile for ${targetUsername}`)
     const targetEmbedding = dnaResult.embedding.values
 
     // 2. Query Postgres using Vector Similarity (The <=> operator)
-    // We look for creators in the "CreatorDNA" table who are mathematically closest
-    // We use $queryRaw because standard Prisma doesn't support vector math operators yet
+    // Note: Ensure your 'pgvector' extension is enabled in your Postgres database
     const lookalikes: any[] = await prisma.$queryRaw`
       SELECT 
         username, 
@@ -35,7 +33,6 @@ export async function POST(req: NextRequest) {
 
     // 3. Format the results for your Discover UI
     const formattedLookalikes = lookalikes.map((l: any) => {
-      // Parse metadata if it's stored as a string, otherwise use as object
       const meta = typeof l.metadata === 'string' ? JSON.parse(l.metadata) : l.metadata
       
       return {
@@ -48,7 +45,7 @@ export async function POST(req: NextRequest) {
         estCpm: "₹80", 
         emv: "₹1,20,000",
         safetyScore: 94,
-        similarity: `${Math.round((1 - l.distance) * 100)}% Match`,
+        similarity: `${Math.round((1 - (l.distance || 0)) * 100)}% Match`,
         niches: ['AI Lookalike', 'Semantic Match']
       }
     })
