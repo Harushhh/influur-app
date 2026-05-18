@@ -9,7 +9,7 @@ export async function GET() {
 
     if (!user) return NextResponse.json({ success: true, data: [] })
 
-    // 1. Fetch saved records using the correct 'brandId' field
+    // 1. Fetch saved records using the 'brandId' field from your schema
     const saved = await prisma.savedInfluencer.findMany({
       where: { brandId: user.id },
       include: { influencer: true }, 
@@ -22,7 +22,7 @@ export async function GET() {
       where: { username: { in: usernames } }
     })
 
-    // 3. Map data while strictly accessing fields that exist in the schema
+    // 3. Map data - Accessing only fields that exist in your Prisma schema
     const data = saved.map(s => {
       const dna = dnas.find(d => d.username === s.influencer?.username)
       
@@ -31,6 +31,11 @@ export async function GET() {
         username: s.influencer?.username || 'unknown',
         name: s.influencer?.name || 'Unknown',
         avatar: s.influencer?.avatarUrl || '',
+        
+        // These fields default to 0 as they are not on the User/SavedInfluencer model
+        followers: 0, 
+        engagementRate: '0.00',
+        
         optInStatus: s.optInStatus,
         cpm: dna?.cpm || 0,
         realReach: dna?.realReach || 0,
@@ -123,6 +128,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
+    
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 })
 
     await prisma.savedInfluencer.delete({ where: { id } })
