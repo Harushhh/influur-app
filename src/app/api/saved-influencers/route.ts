@@ -9,31 +9,28 @@ export async function GET() {
 
     if (!user) return NextResponse.json({ success: true, data: [] })
 
-    // 1. Fetch the saved CRM records using brandId (as per schema)
+    // 1. Fetch saved records using the correct 'brandId' field
     const saved = await prisma.savedInfluencer.findMany({
       where: { brandId: user.id },
       include: { influencer: true }, 
       orderBy: { savedAt: 'desc' }
     })
 
-    // 2. Fetch the corresponding CreatorDNA records
+    // 2. Extract usernames for DNA lookup
     const usernames = saved.map(s => s.influencer?.username).filter(Boolean) as string[]
     const dnas = await prisma.creatorDNA.findMany({
       where: { username: { in: usernames } }
     })
 
-    // 3. Merge them together safely
+    // 3. Map data while strictly accessing fields that exist in the schema
     const data = saved.map(s => {
       const dna = dnas.find(d => d.username === s.influencer?.username)
-      const advData = (dna?.metadata as any) || {} // Used metadata based on your schema
-
+      
       return {
         id: s.id,
         username: s.influencer?.username || 'unknown',
         name: s.influencer?.name || 'Unknown',
         avatar: s.influencer?.avatarUrl || '',
-        followers: s.influencer?.igFollowers || 0, // Matched your schema fields
-        engagementRate: s.influencer?.igEngagement || 0,
         optInStatus: s.optInStatus,
         cpm: dna?.cpm || 0,
         realReach: dna?.realReach || 0,
@@ -66,8 +63,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const mockEmail = `${body.handle}@mock.influur.com`
-    
     let influencer = await prisma.user.findUnique({
       where: { username: body.handle }
     })
@@ -76,7 +71,7 @@ export async function POST(req: NextRequest) {
       influencer = await prisma.user.create({
         data: {
           username: body.handle,
-          email: mockEmail,
+          email: `${body.handle}@mock.influur.com`,
           name: body.name || body.handle,
           role: 'CREATOR',
         }
@@ -104,7 +99,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (err: any) {
-    console.error('POST Error:', err.message)
     return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }
@@ -129,7 +123,6 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
-    
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 })
 
     await prisma.savedInfluencer.delete({ where: { id } })
