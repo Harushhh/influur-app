@@ -9,34 +9,37 @@ export async function GET() {
 
     if (!user) return NextResponse.json({ success: true, data: [] })
 
+    // 1. Fetch saved records
     const saved = await prisma.savedInfluencer.findMany({
       where: { brandId: user.id },
       include: { influencer: true }, 
       orderBy: { savedAt: 'desc' }
     }) as any[]
 
+    // 2. Fetch DNA records
     const usernames = saved.map(s => s.influencer?.username).filter(Boolean) as string[]
     const dnas = await (prisma as any).creatorDNA.findMany({
       where: { username: { in: usernames } }
     })
 
+    // 3. Map data safely
     const data = saved.map((s: any) => {
       const dna = dnas.find((d: any) => d.username === s.influencer?.username)
       
       return {
         id: s.id,
         // @ts-ignore
-        username: s.influencer?.username || 'unknown',
+        username: s.influencer?.username ?? 'unknown',
         // @ts-ignore
-        name: s.influencer?.name || 'Unknown',
+        name: s.influencer?.name ?? 'Unknown',
         // @ts-ignore
-        avatar: s.influencer?.avatarUrl || '',
+        avatar: s.influencer?.avatarUrl ?? '',
         followers: 0,
         engagementRate: '0.00',
         optInStatus: s.optInStatus,
-        cpm: dna?.cpm || 0,
-        realReach: dna?.realReach || 0,
-        audLocation: dna?.location || 'Unknown'
+        cpm: dna?.cpm ?? 0,
+        realReach: dna?.realReach ?? 0,
+        audLocation: dna?.location ?? 'Unknown'
       }
     })
 
