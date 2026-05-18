@@ -1,11 +1,11 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"] 
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // Vector extension temporarily removed for local development
 }
 
@@ -44,27 +44,27 @@ enum OptInStatus {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String
-  username          String?   @unique
-  avatarUrl         String?
-  role              Role      @default(CREATOR)
-  isVerified        Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  username   String?  @unique
+  avatarUrl  String?
+  role       Role     @default(CREATOR)
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   subscription      Subscription?
-  influencerProfile InfluencerProfile? 
+  influencerProfile InfluencerProfile?
 
-  oauthTokens       OAuthToken[]
-  searchHistory     SearchHistory[]
-  
-  campaigns         Campaign[]        @relation("BrandCampaigns")
-  savedInfluencers  SavedInfluencer[] @relation("BrandSaves")
-  
-  applications      Application[]     @relation("CreatorApplications")
-  savedByBrands     SavedInfluencer[] @relation("InfluencerSaved")
+  oauthTokens   OAuthToken[]
+  searchHistory SearchHistory[]
+
+  campaigns        Campaign[]        @relation("BrandCampaigns")
+  savedInfluencers SavedInfluencer[] @relation("BrandSaves")
+
+  applications  Application[]     @relation("CreatorApplications")
+  savedByBrands SavedInfluencer[] @relation("InfluencerSaved")
 
   @@index([role])
   @@index([email])
@@ -85,67 +85,67 @@ model Subscription {
 }
 
 model InfluencerProfile {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  bio               String?  @db.Text
-  location          String?
-  niche             String[] 
-  
-  totalAudience     Int      @default(0)
-  avgEngagementRate Float    @default(0.0)
-  authenticityScore Float?   
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  igHandle          String?  @unique
-  igFollowers       Int      @default(0)
-  igEngagement      Float    @default(0.0)
-  igRateCard        Float?   
-  
-  ttHandle          String?  @unique
-  ttFollowers       Int      @default(0)
-  ttEngagement      Float    @default(0.0)
-  ttRateCard        Float?
+  bio      String?  @db.Text
+  location String?
+  niche    String[]
 
-  ytHandle          String?  @unique
-  ytSubscribers     Int      @default(0)
-  ytAvgViews        Int      @default(0)
-  ytRateCard        Float?
+  totalAudience     Int    @default(0)
+  avgEngagementRate Float  @default(0.0)
+  authenticityScore Float?
 
-  audienceData      Json?    
-  growthHistory     Json?    
+  igHandle     String? @unique
+  igFollowers  Int     @default(0)
+  igEngagement Float   @default(0.0)
+  igRateCard   Float?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  ttHandle     String? @unique
+  ttFollowers  Int     @default(0)
+  ttEngagement Float   @default(0.0)
+  ttRateCard   Float?
+
+  ytHandle      String? @unique
+  ytSubscribers Int     @default(0)
+  ytAvgViews    Int     @default(0)
+  ytRateCard    Float?
+
+  audienceData  Json?
+  growthHistory Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([totalAudience(sort: Desc)])
   @@index([avgEngagementRate(sort: Desc)])
 }
 
 model CreatorDNA {
-  id             String   @id @default(cuid())
-  username       String   @unique
-  name           String
-  avatar         String?
-  bio            String?  @db.Text
-  followers      Int      @default(0)
-  engagement     Float    @default(0.0)
-  location       String?
-  category       String?
-  realReach      Int      @default(0)
-  cpm            Float    @default(0.0)
-  isVerified     Boolean  @default(false)
-  hasEmail       Boolean  @default(false)
+  id         String  @id @default(cuid())
+  username   String  @unique
+  name       String
+  avatar     String?
+  bio        String? @db.Text
+  followers  Int     @default(0)
+  engagement Float   @default(0.0)
+  location   String?
+  category   String?
+  realReach  Int     @default(0)
+  cpm        Float   @default(0.0)
+  isVerified Boolean @default(false)
+  hasEmail   Boolean @default(false)
 
-  advancedData   Json?
-  recentPosts    Json?
-  metadata       Json?
-  
+  advancedData Json?
+  recentPosts  Json?
+  metadata     Json?
+
   // AI Lookalike Vector mapping (Temporarily paused for local DB compatibility)
   // embedding      Unsupported("vector(768)")?
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([followers(sort: Desc)])
   @@index([engagement(sort: Desc)])
@@ -154,67 +154,67 @@ model CreatorDNA {
 }
 
 model Campaign {
-  id                String         @id @default(cuid())
-  brandId           String
-  brand             User           @relation("BrandCampaigns", fields: [brandId], references: [id], onDelete: Cascade)
-  
-  title             String
-  description       String         @db.Text
-  deliverables      String[]       
-  targetNiche       String[]
-  minFollowers      Int            @default(0)
-  budgetRange       String?        
-  
-  status            CampaignStatus @default(DRAFT)
+  id      String @id @default(cuid())
+  brandId String
+  brand   User   @relation("BrandCampaigns", fields: [brandId], references: [id], onDelete: Cascade)
+
+  title        String
+  description  String   @db.Text
+  deliverables String[]
+  targetNiche  String[]
+  minFollowers Int      @default(0)
+  budgetRange  String?
+
+  status             CampaignStatus @default(DRAFT)
   applicationDealine DateTime?
-  
-  applications      Application[]
-  
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([brandId])
   @@index([status])
 }
 
 model Application {
-  id                String            @id @default(cuid())
-  campaignId        String
-  campaign          Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
-  creatorId         String
-  creator           User              @relation("CreatorApplications", fields: [creatorId], references: [id], onDelete: Cascade)
-  
-  coverLetter       String            @db.Text
-  proposedRate      Float?
-  status            ApplicationStatus @default(PENDING)
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
-  @@unique([campaignId, creatorId]) 
+  creatorId String
+  creator   User   @relation("CreatorApplications", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  coverLetter  String            @db.Text
+  proposedRate Float?
+  status       ApplicationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campaignId, creatorId])
   @@index([creatorId])
   @@index([status])
 }
 
 model SavedInfluencer {
-  id              String      @id @default(cuid())
-  
-  brandId         String?
-  brand           User?       @relation("BrandSaves", fields: [brandId], references: [id], onDelete: Cascade)
-  
-  influencerId    String?
-  influencer      User?       @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  brandId String?
+  brand   User?   @relation("BrandSaves", fields: [brandId], references: [id], onDelete: Cascade)
+
+  influencerId String?
+  influencer   User?   @relation("InfluencerSaved", fields: [influencerId], references: [id], onDelete: Cascade)
 
   externalUsername String?
-  externalData     Json?      
-  
-  optInStatus     OptInStatus @default(PENDING)
-  notes           String?     @db.Text
-  listName        String      @default("Default List") 
-  
-  savedAt         DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  externalData     Json?
+
+  optInStatus OptInStatus @default(PENDING)
+  notes       String?     @db.Text
+  listName    String      @default("Default List")
+
+  savedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([optInStatus])
   @@index([brandId])
@@ -233,19 +233,19 @@ model SearchHistory {
 }
 
 model OAuthToken {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider      String    
-  accessToken   String
-  refreshToken  String?
-  tokenType     String    @default("Bearer")
-  scope         String[]
-  expiresAt     DateTime?
-  accountId     String?   
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String
+  accessToken  String
+  refreshToken String?
+  tokenType    String    @default("Bearer")
+  scope        String[]
+  expiresAt    DateTime?
+  accountId    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, provider])
   @@index([provider])
