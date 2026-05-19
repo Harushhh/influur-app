@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function BrandLoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,8 +23,9 @@ export default function BrandLoginPage() {
     setStep('done')
 
     document.cookie = "influur_role=brand; path=/; max-age=86400"
-    // Redirect to the Brand Dashboard
-    window.location.href = '/brand/dashboard'
+    
+    // Secure Next.js router push to the Brand Dashboard
+    router.push('/brand/dashboard')
   }
 
   const stepMessages: Record<string, string> = {
@@ -115,7 +118,7 @@ export default function BrandLoginPage() {
             </button>
           </form>
 
-          {/* UPDATED: Now links to the Sign Up page */}
+          {/* Link to the Sign Up page */}
           <p className="text-xs text-gray-500 font-medium">
             Don't have a brand account? <Link href="/brand/signup" className="text-brand-600 font-bold hover:underline">Sign Up here</Link>
           </p>

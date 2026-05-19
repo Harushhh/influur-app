@@ -22,9 +22,9 @@ export default function Home() {
       
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row gap-5 z-10 w-full sm:w-auto">
-        {/* BRAND ENTRY: Bypasses login and points directly to the dashboard */}
+        {/* BRAND ENTRY: Points to the brand login page */}
         <Link 
-          href="/brand/dashboard" 
+          href="/brand/login" 
           className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-4 text-xs sm:text-sm font-bold rounded-2xl tracking-[0.1em] uppercase transition-all duration-300 hover:-translate-y-1 hover:shadow-float shadow-soft text-center"
         >
           Enter Brand Portal
