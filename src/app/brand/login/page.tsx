@@ -24,8 +24,8 @@ export default function BrandLoginPage() {
 
     document.cookie = "influur_role=brand; path=/; max-age=86400"
     
-    // Secure Next.js router push to the Brand Dashboard
-    router.push('/brand/dashboard')
+    // ✨ THE FIX: Route them directly to the Campaign Creation page!
+    router.push('/brand/campaigns/new')
   }
 
   const stepMessages: Record<string, string> = {
@@ -94,7 +94,7 @@ export default function BrandLoginPage() {
               />
             </div>
 
-            {/* Step progress (Shows when loading) */}
+            {/* Step progress */}
             {loading && step !== 'idle' && (
               <div className="mb-6 text-center">
                 <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden mb-2">
@@ -118,7 +118,6 @@ export default function BrandLoginPage() {
             </button>
           </form>
 
-          {/* Link to the Sign Up page */}
           <p className="text-xs text-gray-500 font-medium">
             Don't have a brand account? <Link href="/brand/signup" className="text-brand-600 font-bold hover:underline">Sign Up here</Link>
           </p>
