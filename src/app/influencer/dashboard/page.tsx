@@ -209,10 +209,21 @@ export default function InfluencerDashboardPage() {
   const [competitorError, setCompetitorError] = useState('')
 
   useEffect(() => {
+    // 1. Check for Meta Errors from the callback
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err === 'missing_ig_business_account') {
+      alert("⚠️ META LOGIN WORKED, BUT INSTAGRAM IS MISSING ⚠️\n\nWe successfully connected to your Facebook account, but could not find an Instagram Professional/Creator account attached to your Facebook Page.\n\nTo fix this:\n1. Open Instagram App -> Settings -> Account type and tools -> Switch to Professional Account.\n2. In Instagram Settings -> Business/Creator -> Connect or Create Facebook Page.\n3. Log in here again!");
+    } else if (err) {
+      alert(`Error during Meta Login: ${err}`);
+    }
+
+    // 2. Fetch the Data
     fetch('/api/auth/instagram?dashboard=1')
       .then(r => r.json())
       .then(d => { 
-        if(d.data && d.data.isLive) {
+        if(d.data) { 
+            // We now set the data ALWAYS, even if isLive is false!
             setData(d.data); 
         }
         setLoading(false) 
@@ -309,9 +320,9 @@ export default function InfluencerDashboardPage() {
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="text-xs font-black text-brand-600 tracking-widest uppercase bg-brand-50 px-3 py-1 rounded-full">Influencer Studio</span>
-              <span className={`flex items-center text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${data?.isLive ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
-                <span className={`w-2 h-2 rounded-full mr-2 animate-pulse ${data?.isLive ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                {data?.isLive ? 'Live Connection Active' : 'Waiting for Data...'}
+              <span className={`flex items-center text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${data?.isLive ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : data?.isConnected ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                <span className={`w-2 h-2 rounded-full mr-2 ${data?.isLive ? 'bg-emerald-500 animate-pulse' : data?.isConnected ? 'bg-rose-500' : 'bg-amber-500 animate-pulse'}`}></span>
+                {data?.isLive ? 'Live Connection Active' : data?.isConnected ? 'Missing IG Business Account' : 'Waiting for Data...'}
               </span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight">
