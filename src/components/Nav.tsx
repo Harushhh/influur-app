@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react'
 export default function Navbar() {
   const path = usePathname()
   
-  // Default to brand during development if we are on internal pages to prevent the navbar from disappearing
   const [role, setRole] = useState<'brand' | 'creator' | 'guest'>('guest')
   const [mounted, setMounted] = useState(false)
 
@@ -52,9 +51,9 @@ export default function Navbar() {
         { href: '/messages', label: 'Messages' },
       ]
     }
-    // Guest Links
+    // Guest Links - Updated to route directly to the dashboard
     return [
-      { href: '/brand/login', label: 'Brand Portal' },
+      { href: '/brand/dashboard', label: 'Brand Portal' },
       { href: '/influencer/login', label: 'Creator Portal' },
     ]
   }
@@ -74,7 +73,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Dynamic Desktop Links (Removed 'hidden md:flex' so it always shows on smaller screens too) */}
+          {/* Dynamic Desktop Links */}
           <div className="flex items-center gap-4 sm:gap-8">
             {getNavLinks().map((link) => {
               const isActive = path?.startsWith(link.href)

@@ -12,7 +12,6 @@ export default function Home() {
       {/* Headline */}
       <h1 className="text-5xl sm:text-7xl font-extrabold text-gray-900 mb-6 max-w-4xl leading-[1.1] text-center tracking-tight">
         The Elite Omni-Channel <br/>
-        {/* Blending your legacy serif font with the new modern gradient */}
         <span className="font-serif italic text-gradient pr-4">Influencer CRM</span>
       </h1>
       
@@ -23,9 +22,9 @@ export default function Home() {
       
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row gap-5 z-10 w-full sm:w-auto">
-        {/* BRAND ENTRY: Points straight to our new enterprise login page */}
+        {/* BRAND ENTRY: Bypasses login and points directly to the dashboard */}
         <Link 
-          href="/brand/login" 
+          href="/brand/dashboard" 
           className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-4 text-xs sm:text-sm font-bold rounded-2xl tracking-[0.1em] uppercase transition-all duration-300 hover:-translate-y-1 hover:shadow-float shadow-soft text-center"
         >
           Enter Brand Portal
