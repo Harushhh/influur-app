@@ -142,11 +142,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // THE UNBREAKABLE RULE: Force the correct link based on where the app is running
+  // THE NUCLEAR OPTION: Hardcoded Live URL
   const appId = process.env.INSTAGRAM_APP_ID
-  const redirectUri = process.env.NODE_ENV === 'production' 
-    ? "https://influur-gymf90t9w-harshtiwari5711-8068s-projects.vercel.app/api/auth/instagram/callback"
-    : "http://localhost:3000/api/auth/instagram/callback"
+  const redirectUri = "https://influur-gymf90t9w-harshtiwari5711-8068s-projects.vercel.app/api/auth/instagram/callback"
   
   // UPGRADED SCOPES: Ready for Auto-Posting and Chat!
   const metaLoginUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=public_profile,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_content_publish,instagram_manage_messages&response_type=code`

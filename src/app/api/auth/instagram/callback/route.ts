@@ -7,11 +7,8 @@ export async function GET(req: NextRequest) {
 
   console.log("=== META OAUTH CALLBACK STARTED ===")
 
-  // THE UNBREAKABLE RULE FOR ROUTING
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? "https://influur-gymf90t9w-harshtiwari5711-8068s-projects.vercel.app"
-    : "http://localhost:3000"
-
+  // THE NUCLEAR OPTION: Hardcoded Live URL
+  const baseUrl = "https://influur-gymf90t9w-harshtiwari5711-8068s-projects.vercel.app"
   const redirectUri = `${baseUrl}/api/auth/instagram/callback`
 
   if (code) {
