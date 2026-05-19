@@ -1,53 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Force Vercel to NEVER cache this API route
+// Force Vercel to NEVER cache this route
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const code = searchParams.get('code')
-
   const baseUrl = "https://influur-app.vercel.app"
-  const redirectUri = `${baseUrl}/api/auth/instagram/callback`
+  
+  try {
+    const { searchParams } = new URL(req.url)
+    const code = searchParams.get('code')
 
-  if (code) {
-    try {
-      const appId = process.env.INSTAGRAM_APP_ID!
-      const appSecret = process.env.INSTAGRAM_APP_SECRET!
-
-      const tokenRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${appId}&redirect_uri=${redirectUri}&client_secret=${appSecret}&code=${code}`)
-      const tokenData = await tokenRes.json()
-      const accessToken = tokenData.access_token
-
-      if (accessToken) {
-        const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=name,instagram_business_account&access_token=${accessToken}`)
-        const pagesData = await pagesRes.json()
-
-        let igUserId = null;
-        if (pagesData.data && pagesData.data.length > 0) {
-          const pageWithIG = pagesData.data.find((page: any) => page.instagram_business_account?.id)
-          if (pageWithIG) {
-            igUserId = pageWithIG.instagram_business_account.id
-          }
-        }
-
-        // Attach errors to the URL so the dashboard can read them
-        const redirectUrl = new URL(`/influencer/dashboard${!igUserId ? '?error=missing_ig_business_account' : ''}`, baseUrl)
-        const response = NextResponse.redirect(redirectUrl)
-        
-        // Use response.cookies to ensure Next.js doesn't drop them during redirect
-        response.cookies.set({ name: 'ig_token', value: accessToken, path: '/', secure: true, sameSite: 'lax', maxAge: 2592000 })
-        if (igUserId) {
-          response.cookies.set({ name: 'ig_user_id', value: igUserId, path: '/', secure: true, sameSite: 'lax', maxAge: 2592000 })
-        }
-        
-        return response
-      } else {
-        return NextResponse.redirect(new URL(`/influencer/dashboard?error=token_failed`, baseUrl))
-      }
-    } catch (err) {
-      return NextResponse.redirect(new URL('/influencer/dashboard?error=server_crash', baseUrl))
+    if (!code) {
+      return NextResponse.redirect(new URL('/influencer/login?error=no_code', baseUrl))
     }
+
+    const appId = process.env.INSTAGRAM_APP_ID || '';
+    const appSecret = process.env.INSTAGRAM_APP_SECRET || '';
+    const redirectUri = `${baseUrl}/api/auth/instagram/callback`;
+
+    // 1. BULLETPROOF ENCODING: Safely pack Meta's wild characters
+    const tokenUrl = new URL('https://graph.facebook.com/v19.0/oauth/access_token');
+    tokenUrl.searchParams.append('client_id', appId);
+    tokenUrl.searchParams.append('redirect_uri', redirectUri);
+    tokenUrl.searchParams.append('client_secret', appSecret);
+    tokenUrl.searchParams.append('code', code);
+
+    // 2. Fetch Token securely
+    const tokenRes = await fetch(tokenUrl.toString(), { method: 'POST' });
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+
+    if (!accessToken) {
+      console.error("META TOKEN ERROR:", tokenData);
+      return NextResponse.redirect(new URL(`/influencer/dashboard?error=token_failed`, baseUrl))
+    }
+
+    // 3. Fetch Pages
+    const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=name,instagram_business_account&access_token=${accessToken}`)
+    const pagesData = await pagesRes.json()
+
+    let igUserId = null;
+    if (pagesData.data && pagesData.data.length > 0) {
+      const pageWithIG = pagesData.data.find((page: any) => page.instagram_business_account?.id)
+      if (pageWithIG) igUserId = pageWithIG.instagram_business_account.id;
+    }
+
+    // 4. Safe Redirect and Cookie Drop
+    const redirectUrl = new URL(`/influencer/dashboard${!igUserId ? '?error=missing_ig_business_account' : ''}`, baseUrl)
+    const response = NextResponse.redirect(redirectUrl)
+    
+    // Safely apply cookies
+    response.cookies.set('ig_token', accessToken, { path: '/', secure: true, sameSite: 'lax', maxAge: 2592000 })
+    if (igUserId) {
+      response.cookies.set('ig_user_id', igUserId, { path: '/', secure: true, sameSite: 'lax', maxAge: 2592000 })
+    }
+    
+    return response;
+
+  } catch (err: any) {
+    console.error("CRITICAL CALLBACK ERROR:", err);
+    // Absolute fallback so it never 500 errors again
+    return NextResponse.redirect(new URL('/influencer/dashboard?error=fatal_crash', baseUrl))
   }
-  return NextResponse.redirect(new URL('/influencer/login', baseUrl))
 }

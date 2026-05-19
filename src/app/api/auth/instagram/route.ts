@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-// Force Vercel to NEVER cache this API route
+// Force Vercel to NEVER cache this route
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -26,11 +26,10 @@ export async function GET(req: NextRequest) {
       }
 
       if (token && igId) {
-        // 1. Fetch Basic Profile Data 
+        // Fetch Profile & Media safely
         const profileRes = await fetch(`https://graph.facebook.com/v19.0/${igId}?fields=followers_count,media_count,username,name,profile_picture_url&access_token=${token}`)
         const liveProfile = await profileRes.json()
         
-        // 2. Fetch Recent Posts 
         const mediaRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media?fields=media_product_type,media_type,like_count,comments_count&limit=20&access_token=${token}`)
         const mediaData = await mediaRes.json()
 
@@ -49,7 +48,7 @@ export async function GET(req: NextRequest) {
         let engagementRate = 0;
         if (realFollowers > 0) engagementRate = ((totalLikes + totalComments) / realFollowers) * 100;
 
-        // 3. The Insights API
+        // Fetch Insights safely
         const insightsRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/insights?metric=impressions,reach,profile_views&period=day&access_token=${token}`)
         const insightsRaw = await insightsRes.json()
 
@@ -83,20 +82,24 @@ export async function GET(req: NextRequest) {
         })
       }
 
-      if (token) {
-        return NextResponse.json({ success: true, data: { isConnected: true, isLive: false, ...zeroData } })
-      }
-
+      if (token) return NextResponse.json({ success: true, data: { isConnected: true, isLive: false, ...zeroData } })
       return NextResponse.json({ success: true, data: { isConnected: false, isLive: false, ...zeroData } })
+
     } catch (err: any) {
       console.error("API Fetch Error:", err)
       return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 })
     }
   }
 
-  const appId = process.env.INSTAGRAM_APP_ID
+  // BULLETPROOF ENCODING for the Departure Login link
+  const appId = process.env.INSTAGRAM_APP_ID || ''
   const redirectUri = "https://influur-app.vercel.app/api/auth/instagram/callback"
-  const metaLoginUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=public_profile,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_content_publish,instagram_manage_messages&response_type=code`
+  
+  const authUrl = new URL('https://www.facebook.com/v19.0/dialog/oauth');
+  authUrl.searchParams.append('client_id', appId);
+  authUrl.searchParams.append('redirect_uri', redirectUri);
+  authUrl.searchParams.append('scope', 'public_profile,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_content_publish,instagram_manage_messages');
+  authUrl.searchParams.append('response_type', 'code');
 
-  return NextResponse.redirect(metaLoginUrl)
+  return NextResponse.redirect(authUrl.toString())
 }
