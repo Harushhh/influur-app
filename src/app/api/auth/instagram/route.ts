@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
           engagementRate = ((totalLikes + totalComments) / realFollowers) * 100;
         }
 
-        // 4. 🔥 THE INSIGHTS API: Fetch real Reach, Impressions, and Profile Views
+        // 4. THE INSIGHTS API: Fetch real Reach, Impressions, and Profile Views
         const insightsRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/insights?metric=impressions,reach,profile_views&period=day&access_token=${token}`)
         const insightsRaw = await insightsRes.json()
 
@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
             engagementRate: engagementRate.toFixed(2), 
             totalRecentLikes: totalLikes,
             
-            // 🔥 REAL Insights Metrics 
+            // REAL Insights Metrics 
             reach: totalReach,
             impressions: totalImpressions,
             profileViews: totalProfileViews,
@@ -142,8 +142,11 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // THE UNBREAKABLE RULE: Force the correct link based on where the app is running
   const appId = process.env.INSTAGRAM_APP_ID
-  const redirectUri = process.env.INSTAGRAM_REDIRECT_URI
+  const redirectUri = process.env.NODE_ENV === 'production' 
+    ? "https://influur-gymf90t9w-harshtiwari5711-8068s-projects.vercel.app/api/auth/instagram/callback"
+    : "http://localhost:3000/api/auth/instagram/callback"
   
   // UPGRADED SCOPES: Ready for Auto-Posting and Chat!
   const metaLoginUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=public_profile,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management,instagram_content_publish,instagram_manage_messages&response_type=code`
