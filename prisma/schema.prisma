@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -59,7 +60,7 @@ model User {
   oauthTokens   OAuthToken[]
   searchHistory SearchHistory[]
 
-  campaigns        Campaign[]      @relation("BrandCampaigns")
+  campaigns        Campaign[]        @relation("BrandCampaigns")
   savedInfluencers SavedInfluencer[] @relation("BrandSaves")
 
   applications  Application[]   @relation("CreatorApplications")
@@ -85,9 +86,9 @@ model Subscription {
 }
 
 model InfluencerProfile {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   bio      String?  @db.Text
   location String?
@@ -219,10 +220,10 @@ model SavedInfluencer {
 }
 
 model SearchHistory {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  query     String
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query       String
   filtersUsed Json?
   createdAt DateTime @default(now())
 
