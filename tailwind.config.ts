@@ -52,6 +52,9 @@ const config: Config = {
         shimmer: 'shimmer 1.6s infinite',
         fadeUp: 'fadeUp 0.5s ease forwards',
         pulse: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
+        
+        // --- NEW: Blob animation for the Codex effect ---
+        blob: "blob 20s infinite alternate",
       },
       keyframes: {
         // Preserving your original keyframes
@@ -62,6 +65,14 @@ const config: Config = {
         fadeUp: {
           from: { opacity: '0', transform: 'translateY(12px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        
+        // --- NEW: Blob movement keyframes ---
+        blob: {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(50px, -50px) scale(1.2)" },
+          "66%": { transform: "translate(-40px, 40px) scale(0.8)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
         },
       },
     },
